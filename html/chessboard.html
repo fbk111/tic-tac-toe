@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>playing games</h1>
+    <div class="smile"></div>
+    <div class="chessboard">
+        <div class="1">
+
+        </div>
+        <div class="2"></div>
+        <div class="3"></div>
+        <div class="4"></div>
+        <div class="5"></div>
+        <div class="6"></div>
+        <div class="7"></div>
+        <div class="8"></div>
+        <div class="9"></div>
+    </div>
+    <div class="person"></div>
+    <img src="../image/person.png">
+    <img src="../image/smile.png">
+    <script>
+
+        let downLoadEasy = new Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        let randomNumber;
+        const winCombos = [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+            [1, 4, 7],
+            [2, 5, 8],
+            [3, 6, 9],
+            [1, 5, 9],
+            [7, 5, 3]
+        ]
+        let downCurrentPeople=[]
+        let downCurrentComputer=[]
+        const divList = document.querySelectorAll('.chessboard div')
+        for (let i = 0; i < divList.length; i++) {
+            divList[i].onclick = function () {
+                $(this).append('<img src="../image/smile.png">')
+                downLoadEasy = downLoadEasy.filter(item => item != parseInt(this.className))
+                randomNumber = Math.floor(Math.random() * downLoadEasy.length)
+                let numberDemo=downLoadEasy[randomNumber]
+                $(`.${numberDemo}`).append('<img src="../image/person.png">')
+                downLoadEasy.splice(randomNumber, 1)
+                downCurrentComputer.push(numberDemo)
+                downCurrentPeople.push(numberDemo)
+                
+            }
+        }
+    </script>
+    <style>
+        img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .smile {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+
+        .person {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+
+        .chessboard {
+            width: 260px;
+            height: 260px;
+            background-color: rgb(232, 232, 232);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chessboard div {
+            border: 1px solid black;
+            margin: 2px;
+            border-radius: 10px;
+            width: 80px;
+            height: 80px;
+            background-color: rgb(255, 255, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</body>
+
+</html>
