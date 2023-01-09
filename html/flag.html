@@ -1,32 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <h1>Choose your face</h1>
-    <div class="smile">smile</div>
-    <div class="person">person</div>
-    <script></script>
-    <style>
-        .smile{
-            width: 100px;
-            height: 100px;
-            background-color: white;
-            border: 1px solid black;
-            border-radius: 10px;
-        }
-        .person{
-            width: 100px;
-            height: 100px;
-            background-color: white;
-            border: 1px solid black;
-            border-radius: 10px;
+    <div class="smile" >
+        <img src="../image/smile.png"/>
+    </div>
+    <div class="person">
+        <img src="../image/person.png"/>
+    </div>
+    <script>
+        document.querySelector('.smile').onclick=function(){
+            sessionStorage.setItem('user','smile')
+            sessionStorage.setItem('com','person')
+            location.href='./choose.html'
         }
 
+        document.querySelector('.person').onclick=function (){
+            sessionStorage.setItem('user','person')
+            sessionStorage.setItem('com','smile')
+            location.href='./choose.html'
+        }
+    </script>
+    <style>
+        img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .smile {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .person {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </body>
+
 </html>

@@ -11,11 +11,13 @@
 
 <body>
     <h1>playing games</h1>
-    <div class="smile"></div>
+    <h1 class="result"></h1>
+    <div class="smile">
+        <img src="../image/smile.png"/>
+        <div class="smileTime"></div>
+    </div>
     <div class="chessboard">
-        <div class="1">
-
-        </div>
+        <div class="1"></div>
         <div class="2"></div>
         <div class="3"></div>
         <div class="4"></div>
@@ -25,13 +27,20 @@
         <div class="8"></div>
         <div class="9"></div>
     </div>
-    <div class="person"></div>
-    <img src="../image/person.png">
-    <img src="../image/smile.png">
+    <div class="person">
+        <img src="../image/person.png"/>
+        <div class="personTime"></div>
+    </div>
     <script>
 
         let downLoadEasy = new Array(1, 2, 3, 4, 5, 6, 7, 8, 9)
+        let computer = sessionStorage.getItem('com')
+        let person = sessionStorage.getItem('user')
+        let result = document.querySelector('.result')
+        let personTime;
+        let smileTime;
         let randomNumber;
+        let finalTime=1000000
         const winCombos = [
             [1, 2, 3],
             [4, 5, 6],
@@ -42,27 +51,86 @@
             [1, 5, 9],
             [7, 5, 3]
         ]
-        let downCurrentPeople=[]
-        let downCurrentComputer=[]
+        //一上来开始对玩家计时
+       smileTime=setTimeout(()=>{
+            document.querySelector("."+sessionStorage.getItem('user')+'Time').innerHTML=parseInt(finalTime/1000)--
+        },finalTime)
+        let downCurrentPeople = []
+        let downCurrentComputer = []
         const divList = document.querySelectorAll('.chessboard div')
         for (let i = 0; i < divList.length; i++) {
-            divList[i].onclick = function () {
-                $(this).append('<img src="../image/smile.png">')
-                downLoadEasy = downLoadEasy.filter(item => item != parseInt(this.className))
-                randomNumber = Math.floor(Math.random() * downLoadEasy.length)
-                let numberDemo=downLoadEasy[randomNumber]
-                $(`.${numberDemo}`).append('<img src="../image/person.png">')
-                downLoadEasy.splice(randomNumber, 1)
-                downCurrentComputer.push(numberDemo)
-                downCurrentPeople.push(numberDemo)
-                
+            divList[i].addEventListener('click', startClick, false)
+        }
+        function ifWin() {
+
+
+        }
+        function startClick(e) {
+            if (typeof downLoadEasy[parseInt(e.target.className)] == 'number') {
+                personAndComClick(parseInt(e.target.className),person)
+                if (!checkTie()) {
+                    personAndComClick(easyThinkComputer(), computer)
+                }
             }
         }
+        function personAndComClick(id, icon) {
+            $("." + id).append(`<img src="../image/${icon}.png">`)
+            downLoadEasy[id-1] = icon
+            let isWin = checkWin(downLoadEasy, icon)
+            if (isWin) {
+                overGame(isWin)
+            }
+        }
+        function checkWin(downLoadEasy, icon) {
+           let plays=downLoadEasy.reduce((a,e,i)=>(e===icon)?a.concat(i):a,[])
+           let gameWin;
+           for(let [index,win] of winCombos.entries()){
+            if(win.every(item=>plays.indexOf(item)>-1)){
+                gameWin={index:index,player:icon}
+                break
+            }
+           }
+
+        }
+        function overGame(isWin,msg) {
+            for (let i = 0; i < divList.length; i++) {
+                divList[i].removeEventListener('click', startClick, false)
+            }
+            result.innerHTML = msg
+        }
+        function easyThinkComputer() {
+            let chooseArray = downLoadEasy.filter(item => {
+                return typeof item == 'number'
+            })
+            console.log(chooseArray)
+            console.log('all',downLoadEasy)
+            let random = Math.floor(Math.random() * chooseArray.length)
+            return chooseArray[random]
+
+        }
+        function checkTie() {
+            let isEmpty = downLoadEasy.filter(s => typeof s == 'number')
+            if (isEmpty.length == 0) {
+                overGame(null,'平局')
+                return true
+            } else {
+                   return false
+            }
+        }
+        function changeResult(msg) {
+            result.innerHTML = msg
+        }
+
+
+
+
+
     </script>
     <style>
         img {
             width: 50px;
             height: 50px;
+            display: block;
         }
 
         .smile {
@@ -71,6 +139,10 @@
             background-color: white;
             border: 1px solid black;
             border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .person {
@@ -79,6 +151,10 @@
             background-color: white;
             border: 1px solid black;
             border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .chessboard {

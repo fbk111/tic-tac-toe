@@ -13,14 +13,17 @@
     <input class="third" type="button" value="2P"/>
     <script>
         document.querySelector('.first').onclick=function(){
-            sessionStorage.setItem('easy')
+            sessionStorage.setItem('type','easy')
+            location.href='./chessboard.html'
             
         }
         document.querySelector('.second').onclick=function(){
-             sessionStorage.setItem('hard')
+             sessionStorage.setItem('type','hard')
+             location.href='./chessboard.html'
         }
         document.querySelector('.third').onclick=function(){
-             sessionStorage.setItem('2P')
+             sessionStorage.setItem('type','2P')
+             location.href='./chessboard.html'
         }
 
     </script>
