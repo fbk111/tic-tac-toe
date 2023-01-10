@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>playing games</h1>
+    <h1 class="result"></h1>
+    <div class="smile">
+        <img src="../image/smile.png" />
+        <div class="smileDiv">
+            <img src="../image/time.png" />
+            <p class="simleInput">111</p>
+        </div>
+    </div>
+    <div class="chessboard">
+        <div class="0"></div>
+        <div class="1"></div>
+        <div class="2"></div>
+        <div class="3"></div>
+        <div class="4"></div>
+        <div class="5"></div>
+        <div class="6"></div>
+        <div class="7"></div>
+        <div class="8"></div>
+    </div>
+    <div class="person">
+        <img src="../image/person.png" />
+        <div class="personDiv">
+            <img src="../image/time.png" />
+            <p class="personTime">111</p>
+        </div>
+    </div>
+    <script>
+        /*1. Basic setup  一些变量并添加能力
+        2. Determine winner  添加逻辑,获胜者并展示
+        3. Basic AI and winner notificatior  创建一个基本AI
+        4. Minimax a lgori thm !*/
+
+        var origBoard;
+        const huPlayer = 'person';
+        const aiPlayer = 'smile';
+        let personTimer;
+        let comTimer;
+        let inputTime = +new Date();
+        let finalTime=1000000
+        /*胜利的线组，包括对角线*/
+        const winCombos = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [6, 4, 2]
+        ]
+        /*获取元素*/
+        const cells = document.querySelectorAll(".chessboard div");
+        startGame();
+
+        function startGame() {
+            //设置阵列点  创建9个数组元素，元素的键0到8
+            origBoard = Array.from(Array(9).keys());
+            //	console.log(origBoard);
+            for (var i = 0; i < cells.length; i++) {
+                //点击方块
+                cells[i].addEventListener('click', turnClick, false);
+            }
+        }
+        setInterval(startGame, finalTime);
+        function countTime() {
+            //获取当前时间的时间戳（单位毫秒）
+            var nowTime = +new Date();
+            $('.simleInput').text(nowTime-inputTime)
+
+        }
+
+        function turnClick(square) {
+            if (typeof origBoard[parseInt(square.target.className)] == 'number') {
+                //人类玩家点击
+                turn(square.target.className, huPlayer);
+                //由人类转向AI玩家
+                if (!checkTie()) {
+                    //电脑玩家将拐弯，走最合适的地方
+                    turn(bestStep(), aiPlayer);
+                }
+            }
+
+        }
+        //参数是方块ID，播放器
+        function turn(squareId, player) {
+            //这些板阵列数组将属于玩家
+            origBoard[squareId] = player;
+            $("." + squareId).append(`<img src="../image/${player}.png">`)
+            //让游戏进行检查
+            var gameWin = checkWin(origBoard, player);
+            if (gameWin) {
+                gameOver(gameWin);
+            }
+        }
+        /*检查是否胜利方法*/
+        function checkWin(board, player) {
+            //使用reduce累加器
+            let plays = board.reduce((a, e, i) =>
+                (e === player) ? a.concat(i) : a, [])
+            let gameWin = null;
+            //如果是属于之前winCombos胜利组合
+            for (let [index, win] of winCombos.entries()) {
+                if (win.every(Element => plays.indexOf(Element) > -1)) {
+                    //现在我们知道是哪一个组合胜利了
+                    gameWin = { index: index, player: player };
+                    break;
+                }
+            }
+            return gameWin;
+        }
+        /*游戏结束*/
+        function gameOver(gameWin) {
+            /*事件侦听器删除单击，已经结束了，你不能再点击*/
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].removeEventListener('click', turnClick, false);
+            }
+            declareWinner(gameWin.player == huPlayer ? "你已经获得了胜利" : "对不起，你输了");
+        }
+
+        function emptySquares() {
+            //过滤每一个元素,如果元素为number，返回所有方块
+            return origBoard.filter(s => typeof s == 'number');
+        }
+
+        /*AI最优步骤*/
+        function bestStep() {
+            // let array=emptySquares()
+            // let randomNumber=Math.floor(Math.random()*array.length)
+            // return array[randomNumber];
+            return smartAI(origBoard, aiPlayer).index
+        }
+        //眼睛功能，检查是否是平局
+        function checkTie() {
+            if (emptySquares().length == 0) {
+                for (var i = 0; i < cells.length; i++) {
+                    cells[i].removeEventListener('click', turnClick, false);
+                }
+                //谁获胜了
+                declareWinner("平局");
+                return true;
+            } else {
+                //平局
+                return false;
+            }
+
+        }
+
+        function declareWinner(who) {
+            console.log(who)
+        }
+        function smartAI(newBoard, player) {
+            var availSpots = emptySquares(newBoard);
+            if (checkWin(newBoard, player)) {
+                return { score: -10 };
+            } else if (checkWin(newBoard, aiPlayer)) {
+                return { score: 20 };
+            } else if (availSpots.length === 0) {
+                return { score: 0 };
+            }
+            //之后进行评估
+            var moves = [];
+            //收集每个动作时的空白点
+            for (var i = 0; i < availSpots.length; i++) {
+                //然后设置空的索引号
+                var move = {};
+                move.index = newBoard[availSpots[i]];
+                newBoard[availSpots[i]] = player;
+
+                if (player == aiPlayer) {
+                    //存储对象，包括得分属性
+                    var result = smartAI(newBoard, huPlayer);
+                    move.score = result.score;
+                } else {
+                    //存储对象，包括得分属性
+                    var result = smartAI(newBoard, aiPlayer);
+                    move.score = result.score;
+                }
+
+                newBoard[availSpots[i]] = move.index;
+
+                moves.push(move);
+            }
+            var bestMove;
+            //如果是AI玩家，以非常低的数字和循环通过
+            if (player === aiPlayer) {
+                var bestScore = -1000;
+                for (var i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                var bestScore = 1000;
+                for (var i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+
+            return moves[bestMove];
+        }
+    </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        img {
+            width: 50px;
+            height: 50px;
+            display: block;
+        }
+
+        .smile {
+            width: 100%;
+            height: 100px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .person {
+            width: 100%;
+            height: 100px;
+            background-color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .chessboard {
+            width: 260px;
+            height: 260px;
+            background-color: rgba(232, 232, 232, .5);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chessboard div {
+            border: 1px solid black;
+            margin: 2px;
+            border-radius: 10px;
+            width: 80px;
+            height: 80px;
+            background-color: rgb(255, 255, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .smileDiv {
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 1000;
+        }
+
+        .smileDiv img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .personDiv {
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 1000;
+        }
+
+        .personDiv img {
+            width: 30px;
+            height: 30px;
+        }
+    </style>
+</body>
+
+</html>
