@@ -16,7 +16,7 @@
         <img src="../image/smile.png" />
         <div class="smileDiv">
             <img src="../image/time.png" />
-            <p class="simleInput">111</p>
+            <p class="simleInput">1000</p>
         </div>
     </div>
     <div class="chessboard">
@@ -38,19 +38,12 @@
         </div>
     </div>
     <script>
-        /*1. Basic setup  一些变量并添加能力
-        2. Determine winner  添加逻辑,获胜者并展示
-        3. Basic AI and winner notificatior  创建一个基本AI
-        4. Minimax a lgori thm !*/
-
         var origBoard;
         const huPlayer = 'person';
         const aiPlayer = 'smile';
         let personTimer;
         let comTimer;
         let inputTime = +new Date();
-        let finalTime=1000000
-        /*胜利的线组，包括对角线*/
         const winCombos = [
             [0, 1, 2],
             [3, 4, 5],
@@ -61,12 +54,15 @@
             [0, 4, 8],
             [6, 4, 2]
         ]
-        /*获取元素*/
+        let time=1000
         const cells = document.querySelectorAll(".chessboard div");
         startGame();
 
+        setInterval(() => {
+            $('.personTime').text(--time)
+        }, 1000);
+
         function startGame() {
-            //设置阵列点  创建9个数组元素，元素的键0到8
             origBoard = Array.from(Array(9).keys());
             //	console.log(origBoard);
             for (var i = 0; i < cells.length; i++) {
@@ -74,9 +70,7 @@
                 cells[i].addEventListener('click', turnClick, false);
             }
         }
-        setInterval(startGame, finalTime);
         function countTime() {
-            //获取当前时间的时间戳（单位毫秒）
             var nowTime = +new Date();
             $('.simleInput').text(nowTime-inputTime)
 
@@ -84,37 +78,28 @@
 
         function turnClick(square) {
             if (typeof origBoard[parseInt(square.target.className)] == 'number') {
-                //人类玩家点击
                 turn(square.target.className, huPlayer);
-                //由人类转向AI玩家
                 if (!checkTie()) {
-                    //电脑玩家将拐弯，走最合适的地方
                     turn(bestStep(), aiPlayer);
                 }
             }
 
         }
-        //参数是方块ID，播放器
+
         function turn(squareId, player) {
-            //这些板阵列数组将属于玩家
             origBoard[squareId] = player;
             $("." + squareId).append(`<img src="../image/${player}.png">`)
-            //让游戏进行检查
             var gameWin = checkWin(origBoard, player);
             if (gameWin) {
                 gameOver(gameWin);
             }
         }
-        /*检查是否胜利方法*/
         function checkWin(board, player) {
-            //使用reduce累加器
             let plays = board.reduce((a, e, i) =>
                 (e === player) ? a.concat(i) : a, [])
             let gameWin = null;
-            //如果是属于之前winCombos胜利组合
             for (let [index, win] of winCombos.entries()) {
                 if (win.every(Element => plays.indexOf(Element) > -1)) {
-                    //现在我们知道是哪一个组合胜利了
                     gameWin = { index: index, player: player };
                     break;
                 }
@@ -123,7 +108,6 @@
         }
         /*游戏结束*/
         function gameOver(gameWin) {
-            /*事件侦听器删除单击，已经结束了，你不能再点击*/
             for (var i = 0; i < cells.length; i++) {
                 cells[i].removeEventListener('click', turnClick, false);
             }
@@ -131,15 +115,11 @@
         }
 
         function emptySquares() {
-            //过滤每一个元素,如果元素为number，返回所有方块
             return origBoard.filter(s => typeof s == 'number');
         }
 
         /*AI最优步骤*/
         function bestStep() {
-            // let array=emptySquares()
-            // let randomNumber=Math.floor(Math.random()*array.length)
-            // return array[randomNumber];
             return smartAI(origBoard, aiPlayer).index
         }
         //眼睛功能，检查是否是平局
@@ -148,18 +128,16 @@
                 for (var i = 0; i < cells.length; i++) {
                     cells[i].removeEventListener('click', turnClick, false);
                 }
-                //谁获胜了
                 declareWinner("平局");
                 return true;
             } else {
-                //平局
                 return false;
             }
 
         }
 
         function declareWinner(who) {
-            console.log(who)
+           $('.result').text(who)
         }
         function smartAI(newBoard, player) {
             var availSpots = emptySquares(newBoard);
@@ -170,21 +148,16 @@
             } else if (availSpots.length === 0) {
                 return { score: 0 };
             }
-            //之后进行评估
             var moves = [];
-            //收集每个动作时的空白点
             for (var i = 0; i < availSpots.length; i++) {
-                //然后设置空的索引号
                 var move = {};
                 move.index = newBoard[availSpots[i]];
                 newBoard[availSpots[i]] = player;
 
                 if (player == aiPlayer) {
-                    //存储对象，包括得分属性
                     var result = smartAI(newBoard, huPlayer);
                     move.score = result.score;
                 } else {
-                    //存储对象，包括得分属性
                     var result = smartAI(newBoard, aiPlayer);
                     move.score = result.score;
                 }
@@ -194,7 +167,6 @@
                 moves.push(move);
             }
             var bestMove;
-            //如果是AI玩家，以非常低的数字和循环通过
             if (player === aiPlayer) {
                 var bestScore = -1000;
                 for (var i = 0; i < moves.length; i++) {
